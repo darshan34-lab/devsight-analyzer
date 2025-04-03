@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import RepoInput from '@/components/RepoInput';
 import Dashboard from '@/components/Dashboard';
 import { fetchRepositoryData } from '@/services/githubService';
 import { MockRepoData } from '@/types';
-import { toast } from '@/components/ui/sonner';
-import { Bot, Code2, GitHub } from 'lucide-react';
+import { toast } from 'sonner';
+import { Bot, Code2, Github } from 'lucide-react';
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -58,7 +57,7 @@ const Index = () => {
           <div className="flex flex-col items-center justify-center text-center py-16">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl w-full">
               <FeatureCard 
-                icon={<GitHub className="h-10 w-10 text-primary" />}
+                icon={<Github className="h-10 w-10 text-primary" />}
                 title="Repository Analysis"
                 description="Get insights into any public GitHub repository's structure, quality, and development patterns."
               />
