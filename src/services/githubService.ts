@@ -46,7 +46,7 @@ const calculateCodeMetrics = (
   
   // Generate metrics
   return [
-    { name: 'Primary Language Usage', value: primaryLanguagePercentage, change: 0, unit: '%' },
+  //  { name: 'Primary Language Usage', value: primaryLanguagePercentage, change: 0, unit: '%' },
   //  { name: 'Languages Used', value: languageCount, change: 0, unit: '' },
     { name: 'Recent Commit Frequency', value: recentCommits, change: commitChange, unit: 'per month' },
     { name: 'Code Size', value: Math.round(totalBytes / 1024), change: 0, unit: 'KB' },
