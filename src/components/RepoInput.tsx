@@ -21,8 +21,8 @@ const RepoInput = ({ onSubmit, isLoading }: RepoInputProps) => {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto">
-      <div className="text-center mb-8">
+    <div className="w-full">
+      <div className="text-center mb-8 md:text-left">
         <h1 className="text-3xl font-bold mb-2">DevSight Analyzer</h1>
         <p className="text-muted-foreground">
           Enter a GitHub repository URL to analyze code quality, commit patterns, and developer insights

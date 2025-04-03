@@ -1,4 +1,3 @@
-
 import { 
   MockRepoData, 
   GitHubRepository, 
@@ -68,39 +67,126 @@ const formatCommitActivity = (commitActivity: GitHubCommitActivity[]): { date: s
   }).slice(-12); // Last 12 weeks
 };
 
+// Create headers with authorization if token is provided
+const createHeaders = (token?: string): HeadersInit => {
+  if (token) {
+    return {
+      'Authorization': `token ${token}`,
+      'Accept': 'application/vnd.github.v3+json'
+    };
+  }
+  return {
+    'Accept': 'application/vnd.github.v3+json'
+  };
+};
+
 // Fetch all required data from GitHub API
-export const fetchRepositoryData = async (repoUrl: string): Promise<MockRepoData> => {
+export const fetchRepositoryData = async (repoUrl: string, token?: string): Promise<MockRepoData> => {
   const { owner, repo } = extractRepoInfo(repoUrl);
+  const headers = createHeaders(token);
   
   // Fetch repository details
-  const repoResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}`);
+  const repoResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers });
   if (!repoResponse.ok) {
-    throw new Error(`Repository not found or API limit reached (${repoResponse.status})`);
+    if (repoResponse.status === 403) {
+      throw new Error(`GitHub API rate limit exceeded. ${token ? 'Your token may have insufficient permissions.' : 'Try adding a GitHub personal access token.'}`);
+    } else if (repoResponse.status === 404) {
+      throw new Error(`Repository not found: ${owner}/${repo}`);
+    } else {
+      throw new Error(`Repository not found or API error (${repoResponse.status})`);
+    }
   }
   const repository: GitHubRepository = await repoResponse.json();
   
   // Fetch contributors
-  const contributorsResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/contributors?per_page=5`);
+  const contributorsResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/contributors?per_page=5`, { headers });
   if (!contributorsResponse.ok) {
-    throw new Error('Failed to fetch contributors');
+    console.error(`Failed to fetch contributors: ${contributorsResponse.status}`);
+    // Continue with empty contributors instead of failing
+    const contributorsData: GitHubContributor[] = [];
+    
+    // Fetch commit activity
+    const commitActivityResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/stats/commit_activity`, { headers });
+    if (!commitActivityResponse.ok) {
+      console.error(`Failed to fetch commit activity: ${commitActivityResponse.status}`);
+      // Mock empty commit activity
+      const commitActivityData: GitHubCommitActivity[] = Array(12).fill({ week: Date.now() / 1000, total: 0, days: [0, 0, 0, 0, 0, 0, 0] });
+      
+      // Fetch languages (continue despite previous errors)
+      const languagesResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/languages`, { headers });
+      if (!languagesResponse.ok) {
+        console.error(`Failed to fetch languages: ${languagesResponse.status}`);
+        // Mock empty languages
+        const languagesData: GitHubLanguage = {};
+        
+        // Format with available data
+        return formatRepositoryData(repository, contributorsData, commitActivityData, languagesData);
+      }
+      
+      const languagesData: GitHubLanguage = await languagesResponse.json();
+      return formatRepositoryData(repository, contributorsData, commitActivityData, languagesData);
+    }
+    
+    const commitActivityData: GitHubCommitActivity[] = await commitActivityResponse.json();
+    
+    // Fetch languages
+    const languagesResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/languages`, { headers });
+    if (!languagesResponse.ok) {
+      console.error(`Failed to fetch languages: ${languagesResponse.status}`);
+      // Mock empty languages
+      const languagesData: GitHubLanguage = {};
+      return formatRepositoryData(repository, contributorsData, commitActivityData, languagesData);
+    }
+    
+    const languagesData: GitHubLanguage = await languagesResponse.json();
+    return formatRepositoryData(repository, contributorsData, commitActivityData, languagesData);
   }
+  
   const contributorsData: GitHubContributor[] = await contributorsResponse.json();
   
   // Fetch commit activity
-  const commitActivityResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/stats/commit_activity`);
+  const commitActivityResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/stats/commit_activity`, { headers });
   if (!commitActivityResponse.ok) {
-    throw new Error('Failed to fetch commit activity');
+    console.error(`Failed to fetch commit activity: ${commitActivityResponse.status}`);
+    // Mock empty commit activity
+    const commitActivityData: GitHubCommitActivity[] = Array(12).fill({ week: Date.now() / 1000, total: 0, days: [0, 0, 0, 0, 0, 0, 0] });
+    
+    // Fetch languages
+    const languagesResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/languages`, { headers });
+    if (!languagesResponse.ok) {
+      console.error(`Failed to fetch languages: ${languagesResponse.status}`);
+      // Mock empty languages
+      const languagesData: GitHubLanguage = {};
+      return formatRepositoryData(repository, contributorsData, commitActivityData, languagesData);
+    }
+    
+    const languagesData: GitHubLanguage = await languagesResponse.json();
+    return formatRepositoryData(repository, contributorsData, commitActivityData, languagesData);
   }
+  
   const commitActivityData: GitHubCommitActivity[] = await commitActivityResponse.json();
   
   // Fetch languages
-  const languagesResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/languages`);
+  const languagesResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/languages`, { headers });
   if (!languagesResponse.ok) {
-    throw new Error('Failed to fetch languages');
+    console.error(`Failed to fetch languages: ${languagesResponse.status}`);
+    // Mock empty languages
+    const languagesData: GitHubLanguage = {};
+    return formatRepositoryData(repository, contributorsData, commitActivityData, languagesData);
   }
-  const languagesData: GitHubLanguage = await languagesResponse.json();
   
-  // Format and transform the data
+  const languagesData: GitHubLanguage = await languagesResponse.json();
+  return formatRepositoryData(repository, contributorsData, commitActivityData, languagesData);
+};
+
+// Format repository data
+const formatRepositoryData = (
+  repository: GitHubRepository,
+  contributorsData: GitHubContributor[],
+  commitActivityData: GitHubCommitActivity[],
+  languagesData: GitHubLanguage
+): MockRepoData => {
+  // Format repository
   const formattedRepository = {
     name: repository.name,
     owner: repository.owner.login,
@@ -114,6 +200,7 @@ export const fetchRepositoryData = async (repoUrl: string): Promise<MockRepoData
     updatedAt: repository.updated_at,
   };
   
+  // Format contributors
   const formattedContributors = contributorsData.map(contributor => ({
     name: contributor.login,
     avatarUrl: contributor.avatar_url,
@@ -121,6 +208,7 @@ export const fetchRepositoryData = async (repoUrl: string): Promise<MockRepoData
     url: contributor.html_url,
   }));
   
+  // Calculate metrics and format commit activity
   const codeMetrics = calculateCodeMetrics(languagesData, commitActivityData);
   const commitActivity = formatCommitActivity(commitActivityData);
   
