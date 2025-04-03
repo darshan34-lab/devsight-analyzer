@@ -1,73 +1,63 @@
-# Welcome to your Lovable project
+# Dev Insight - GitHub Repo Analyzer
 
-## Project info
+Dev Insight is a web-based tool that analyzes GitHub repositories using the GitHub REST API. It provides insights into repository statistics, contributions, and activity trends, helping developers understand repository health and engagement.
 
-**URL**: https://lovable.dev/projects/3681e38a-e451-4c6c-b29a-31d1d775ab20
+## Features
+- **Repository Overview** – Displays key metrics like stars, forks, issues, and pull requests.
+- **Contributor Insights** – Analyzes the top contributors, commit frequency, and activity trends.
+- **Commit History Visualization** – Graphical representation of commits over time.
+- **Issue & PR Analysis** – Tracks open/closed issues and pull requests with response times.
+- **Code Frequency Analysis** – Shows how code additions and deletions change over time.
 
-## How can I edit this code?
+## Technologies Used
+- **GitHub REST API** – Fetches repository data like commits, contributors, issues, and pull requests.
+- **React** – A JavaScript library for building interactive user interfaces.
+- **TypeScript** – Ensures type safety and maintainability.
+- **Vite** – Provides a fast development environment and optimized build process.
+- **Tailwind CSS** – Utility-first CSS framework for styling.
+- **ShadCN UI** – Modern UI components built on Tailwind CSS.
+- **GitHub Pages** – Used for project deployment.
 
-There are several ways of editing your application.
+## Installation & Setup
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/darshan34-lab/devsight-analyzer.git
+   cd devsight-analyzer
+   ```
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+3. **Create a .env file** (if required for API keys) and configure it.
+4. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+5. **Build for production:**
+   ```bash
+   npm run build
+   ```
 
-**Use Lovable**
+## Usage
+- Enter a GitHub repository URL or name.
+- View detailed statistics, commit history, and contribution insights.
+- Analyze issue trends and pull request activity.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/3681e38a-e451-4c6c-b29a-31d1d775ab20) and start prompting.
+## Contribution
+1. Fork the repository.
+2. Create a new branch:
+   ```bash
+   git checkout -b feature-branch
+   ```
+3. Make your changes and commit:
+   ```bash
+   git commit -m "Added a new feature"
+   ```
+4. Push to GitHub and create a Pull Request.
 
-Changes made via Lovable will be committed automatically to this repo.
+## License
+This project is licensed under the MIT License.
 
-**Use your preferred IDE**
+---
+Made with ❤️ by the Dev Insight Team.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/3681e38a-e451-4c6c-b29a-31d1d775ab20) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes it is!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
