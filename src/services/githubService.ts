@@ -119,8 +119,7 @@ const commitData = await commitResponse.json();
 const filteredCommits = commitData.filter(commit => 
   commit.author && 
   !commit.author.login.includes("lovable-dev[bot]") &&  // Removes bot accounts
-  !commit.author.login.toLowerCase().includes("bot") && // Catches cases like "lovable-dev-bot"
-  commit.author.type !== "Bot"  // Removes users with type "Bot"
+
 );
 
 
