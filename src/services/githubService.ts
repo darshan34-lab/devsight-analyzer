@@ -1,53 +1,133 @@
 
-import { MockRepoData } from "@/types";
+import { 
+  MockRepoData, 
+  GitHubRepository, 
+  GitHubContributor, 
+  GitHubCommitActivity,
+  GitHubLanguage,
+  CodeMetric
+} from "@/types";
 
-// For demo purposes, we'll use mock data
-export const fetchRepositoryData = async (repoUrl: string): Promise<MockRepoData> => {
-  // In a real implementation, we would parse the repoUrl and make API calls
-  // to GitHub's API to fetch the actual data
+// Extract owner and repo name from GitHub URL
+const extractRepoInfo = (repoUrl: string): { owner: string; repo: string } => {
+  const parts = repoUrl.split('/');
+  // Handle URLs with or without trailing slash
+  const repoIndex = parts.length - 1 === 0 || parts[parts.length - 1] === '' ? parts.length - 2 : parts.length - 1;
+  const ownerIndex = repoIndex - 1;
   
-  // Mock data for visualization purposes
   return {
-    repository: {
-      name: repoUrl.split('/').pop() || 'Repository',
-      owner: repoUrl.split('/').slice(-2, -1)[0] || 'Owner',
-      description: 'A modern code analysis and development insights tool',
-      stars: 1287,
-      forks: 348,
-      issues: 67,
-      language: 'TypeScript',
-      url: repoUrl,
-      createdAt: '2022-03-15',
-      updatedAt: '2023-07-25',
-    },
-    codeMetrics: [
-      { name: 'Code Quality Score', value: 87, change: 3, unit: '%' },
-      { name: 'Test Coverage', value: 76, change: -2, unit: '%' },
-      { name: 'Technical Debt', value: 24, change: -5, unit: 'hours' },
-      { name: 'Code Duplication', value: 7, change: 1, unit: '%' },
-      { name: 'Documentation Coverage', value: 62, change: 8, unit: '%' },
-      { name: 'Complexity Score', value: 28, change: -3, unit: '' },
-    ],
-    commitActivity: [
-      { date: '2023-01', count: 56 },
-      { date: '2023-02', count: 42 },
-      { date: '2023-03', count: 85 },
-      { date: '2023-04', count: 37 },
-      { date: '2023-05', count: 63 },
-      { date: '2023-06', count: 91 },
-      { date: '2023-07', count: 72 },
-      { date: '2023-08', count: 84 },
-      { date: '2023-09', count: 65 },
-      { date: '2023-10', count: 78 },
-      { date: '2023-11', count: 94 },
-      { date: '2023-12', count: 52 },
-    ],
-    contributors: [
-      { name: 'Sarah Chen', avatarUrl: 'https://i.pravatar.cc/150?u=sarah', contributions: 243, url: '#' },
-      { name: 'Alex Rivera', avatarUrl: 'https://i.pravatar.cc/150?u=alex', contributions: 186, url: '#' },
-      { name: 'Jordan Lee', avatarUrl: 'https://i.pravatar.cc/150?u=jordan', contributions: 142, url: '#' },
-      { name: 'Tasha Kim', avatarUrl: 'https://i.pravatar.cc/150?u=tasha', contributions: 97, url: '#' },
-      { name: 'Miguel Santos', avatarUrl: 'https://i.pravatar.cc/150?u=miguel', contributions: 76, url: '#' },
-    ]
+    owner: parts[ownerIndex],
+    repo: parts[repoIndex]
+  };
+};
+
+// Calculate code metrics based on languages and commit activity
+const calculateCodeMetrics = (
+  languages: GitHubLanguage, 
+  commitActivity: GitHubCommitActivity[]
+): CodeMetric[] => {
+  // Calculate total bytes of code
+  const totalBytes = Object.values(languages).reduce((sum, bytes) => sum + bytes, 0);
+  
+  // Get the primary language percentage
+  const primaryLanguage = Object.keys(languages)[0] || 'None';
+  const primaryLanguagePercentage = primaryLanguage !== 'None' 
+    ? Math.round((languages[primaryLanguage] / totalBytes) * 100) 
+    : 0;
+  
+  // Calculate recent commit frequency
+  const recentCommits = commitActivity.slice(-4).reduce((sum, week) => sum + week.total, 0);
+  const olderCommits = commitActivity.slice(-8, -4).reduce((sum, week) => sum + week.total, 0);
+  const commitChange = olderCommits > 0 
+    ? Math.round(((recentCommits - olderCommits) / olderCommits) * 100) 
+    : 100;
+  
+  // Count languages used
+  const languageCount = Object.keys(languages).length;
+  
+  // Generate metrics
+  return [
+    { name: 'Primary Language Usage', value: primaryLanguagePercentage, change: 0, unit: '%' },
+    { name: 'Languages Used', value: languageCount, change: 0, unit: '' },
+    { name: 'Recent Commit Frequency', value: recentCommits, change: commitChange, unit: 'per month' },
+    { name: 'Code Size', value: Math.round(totalBytes / 1024), change: 0, unit: 'KB' },
+    { name: 'Code Quality Score', value: 85, change: 2, unit: '%' },  // Mocked as it requires code analysis
+    { name: 'Documentation Coverage', value: 62, change: 5, unit: '%' },  // Mocked as it requires code analysis
+  ];
+};
+
+// Format commit activity data for the chart
+const formatCommitActivity = (commitActivity: GitHubCommitActivity[]): { date: string; count: number }[] => {
+  return commitActivity.map((week) => {
+    const date = new Date(week.week * 1000);
+    const monthYear = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    return {
+      date: monthYear,
+      count: week.total
+    };
+  }).slice(-12); // Last 12 weeks
+};
+
+// Fetch all required data from GitHub API
+export const fetchRepositoryData = async (repoUrl: string): Promise<MockRepoData> => {
+  const { owner, repo } = extractRepoInfo(repoUrl);
+  
+  // Fetch repository details
+  const repoResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}`);
+  if (!repoResponse.ok) {
+    throw new Error(`Repository not found or API limit reached (${repoResponse.status})`);
+  }
+  const repository: GitHubRepository = await repoResponse.json();
+  
+  // Fetch contributors
+  const contributorsResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/contributors?per_page=5`);
+  if (!contributorsResponse.ok) {
+    throw new Error('Failed to fetch contributors');
+  }
+  const contributorsData: GitHubContributor[] = await contributorsResponse.json();
+  
+  // Fetch commit activity
+  const commitActivityResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/stats/commit_activity`);
+  if (!commitActivityResponse.ok) {
+    throw new Error('Failed to fetch commit activity');
+  }
+  const commitActivityData: GitHubCommitActivity[] = await commitActivityResponse.json();
+  
+  // Fetch languages
+  const languagesResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/languages`);
+  if (!languagesResponse.ok) {
+    throw new Error('Failed to fetch languages');
+  }
+  const languagesData: GitHubLanguage = await languagesResponse.json();
+  
+  // Format and transform the data
+  const formattedRepository = {
+    name: repository.name,
+    owner: repository.owner.login,
+    description: repository.description || 'No description provided',
+    stars: repository.stargazers_count,
+    forks: repository.forks_count,
+    issues: repository.open_issues_count,
+    language: repository.language || 'Not specified',
+    url: repository.html_url,
+    createdAt: repository.created_at,
+    updatedAt: repository.updated_at,
+  };
+  
+  const formattedContributors = contributorsData.map(contributor => ({
+    name: contributor.login,
+    avatarUrl: contributor.avatar_url,
+    contributions: contributor.contributions,
+    url: contributor.html_url,
+  }));
+  
+  const codeMetrics = calculateCodeMetrics(languagesData, commitActivityData);
+  const commitActivity = formatCommitActivity(commitActivityData);
+  
+  return {
+    repository: formattedRepository,
+    codeMetrics,
+    commitActivity,
+    contributors: formattedContributors,
   };
 };

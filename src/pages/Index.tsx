@@ -19,9 +19,6 @@ const Index = () => {
         throw new Error('Please enter a valid GitHub repository URL (https://github.com/username/repository)');
       }
       
-      // Simulate loading for demo
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
       const data = await fetchRepositoryData(repoUrl);
       setRepoData(data);
       
