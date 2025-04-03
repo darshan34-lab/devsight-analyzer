@@ -111,7 +111,7 @@ export const fetchRepositoryData = async (repoUrl: string, token?: string): Prom
       console.error(`Failed to fetch commit activity: ${commitActivityResponse.status}`);
       //  Filter out bot commits
 const filteredCommits = commitData.filter(commit => 
-  commit.author && !commit.author.login.includes("[bot]") && commit.author.login !== "lovable-dev-bot"
+  commit.author && !commit.author.login.includes("[bot]") && commit.author.login !== "lovable-dev[bot]"
 );
       // Mock empty commit activity
       const commitActivityData: GitHubCommitActivity[] = Array(12).fill({ week: Date.now() / 1000, total: 0, days: [0, 0, 0, 0, 0, 0, 0] });
