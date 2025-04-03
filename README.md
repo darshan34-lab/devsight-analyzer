@@ -54,9 +54,5 @@ Dev Insight is a web-based tool that analyzes GitHub repositories using the GitH
    ```
 4. Push to GitHub and create a Pull Request.
 
-## License
-This project is licensed under the MIT License.
 
----
-Made with ❤️ by the Dev Insight Team.
 
