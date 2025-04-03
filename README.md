@@ -2,7 +2,7 @@
 
 Dev Insight is a web-based tool that analyzes GitHub repositories using the GitHub REST API. It provides insights into repository statistics, contributions, and activity trends, helping developers understand repository health and engagement.
 
-## Features
+
 - **Repository Overview** – Displays key metrics like stars, forks, issues, and pull requests.
 - **Contributor Insights** – Analyzes the top contributors, commit frequency, and activity trends.
 - **Commit History Visualization** – Graphical representation of commits over time.
@@ -18,7 +18,7 @@ Dev Insight is a web-based tool that analyzes GitHub repositories using the GitH
 - **ShadCN UI** – Modern UI components built on Tailwind CSS.
 - **GitHub Pages** – Used for project deployment.
 
-## Installation & Setup
+
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/darshan34-lab/devsight-analyzer.git
@@ -38,12 +38,11 @@ Dev Insight is a web-based tool that analyzes GitHub repositories using the GitH
    npm run build
    ```
 
-## Usage
 - Enter a GitHub repository URL or name.
 - View detailed statistics, commit history, and contribution insights.
 - Analyze issue trends and pull request activity.
 
-## Contribution
+
 1. Fork the repository.
 2. Create a new branch:
    ```bash
